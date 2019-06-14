@@ -3,7 +3,8 @@
 #File Name:   db.py
 #Author:      Tianqi Yang
 #Time:        6/13/2019
-#Description: 
+#Description: fetch gas price from website and save in
+# the database
 #######################################################
 import requests
 from  bs4  import BeautifulSoup
@@ -78,9 +79,8 @@ startTime = time.time()
 index = 1
 areaIndex = 1
 month, date, price = '', '', ''
-for area, temp in links.items():
-    print("--------", area)
-    sub_page = requests.get(temp)
+for area_links in links.values():
+    sub_page = requests.get(area_links)
     sub_soup = BeautifulSoup(sub_page.content, "lxml")
     sub_links =  soup.find_all('a', class_='Hist')
     needed_links = [sub_links[3]['href'], sub_links[6]['href'], sub_links[9]['href'] ]
@@ -89,27 +89,62 @@ for area, temp in links.items():
         sub_temp = f"{BASELINK}{sub_sub_link[1:]}"
         sub_sub_page = requests.get(sub_temp)
         sub_sub_soup = BeautifulSoup(sub_sub_page.content, "lxml") 
-        timeType = 1        
+        timeType = 1    
         for a in sub_sub_soup.body.find_all('a', class_='NavChunk'):
             differentTime = f"{BASELINK}/hist/{a['href']}"
             differentTime_page = requests.get(differentTime)
             differentTime_soup = BeautifulSoup(differentTime_page.content, "lxml")            
-            for i in differentTime_soup.body.find_all('tr'):#data page
-                k = i.find_all('td', class_='B6')
-                if len(k) != 0 or i.get_text() == '': 
-                    year = int(k[0].get_text().strip()[:4])
-                    if 2000 <= year <= 2018:
-                        j = i.find_all('td')
-                        for m in range(1, len(j), 2):
-                            month, date, price= j[m].get_text()[:2], j[m].get_text()[3:], j[m+1].get_text()
-                            if month != '' and date != '' and price != '':
-                                #index, year, month, date, price, areaId, gasType, timeType                          
-                                print( index, year, int(month), int(date), float(price), areaIndex, gasIndex, timeType)
-                                cur.execute('INSERT INTO record VALUES (?, ? ,?, ?, ?, ?, ?, ?)', ( index, year, int(month), int(date), float(price), areaIndex, gasIndex, timeType))
-                                index += 1
+            if timeType == 1:
+                for i in differentTime_soup.body.find_all('tr'):
+                    k = i.find_all('td', class_='B6')
+                    if len(k) != 0 or i.get_text() == '': 
+                        year = int(k[0].get_text().strip()[:4])
+                        if 2000 <= year <= 2018:
+                            j = i.find_all('td')
+                            for m in range(1, len(j), 2):
+                                month, date, price= j[m].get_text()[:2], j[m].get_text()[3:], j[m+1].get_text()
+                                if month != '' and date != '' and price != '':
+                                    #index, year, month, date, price, areaId, gasType, timeType                          
+                                    print( index, year, int(month), int(date), float(price), areaIndex, gasIndex, timeType)
+                                    cur.execute('INSERT INTO record VALUES (?, ? ,?, ?, ?, ?, ?, ?)', ( index, year, int(month), int(date), float(price), areaIndex, gasIndex, timeType))
+                                    index += 1
+            elif timeType == 2:
+                for i in differentTime_soup.body.find_all('tr'):
+                    k = i.find_all('td', class_='B4')
+                    if isinstance(k, list) and len(k) > 0 :
+                        if 2000 <= int(k[0].get_text().strip()) <= 2018:
+                            j = i.find_all('td')
+                            year = j[0].get_text().strip()
+                            for m in range(1, len(j)):
+                                price = j[m].get_text()
+                                print( index, int(year), m, float(j[m].get_text()), areaIndex, gasIndex, timeType)
+                                cur.execute('''INSERT INTO record 
+                                                (id, dateYear, dateMonth, price, areaId, gasType, timeType)
+                                                VALUES
+                                                (?, ?, ?, ?, ?, ?, ?)''',
+                                                ( index, int(year), m, float(j[m].get_text()), areaIndex, gasIndex, timeType)
+                                            )
+                                index += 1          
+            else:
+                for i in differentTime_soup.body.find_all('tr'):
+                    k = i.find_all('td', class_='B4')
+                    if isinstance(k, list) and len(k) > 0 :
+                        target_year = int(k[0].get_text().strip()[:4])
+                        if 2000 <= target_year <= 2018:
+                            j = i.find_all('td')
+                            for m in range(1, len(j)):
+                                if j[m].get_text() != '':
+                                    print( index, target_year, float(j[m].get_text() ), areaIndex, gasIndex, timeType)
+                                    cur.execute('''INSERT INTO record 
+                                                    (id, dateYear, price, areaId, gasType, timeType)
+                                                    VALUES
+                                                    (?, ?, ?, ?, ?, ?)''',
+                                                    ( index, target_year, float(j[m].get_text() ), areaIndex, gasIndex, timeType)
+                                                )
+                                    target_year+=1                                
+                                    index += 1                                
             timeType += 1
         gasIndex += 1
     areaIndex += 1
-
-print(f'Time:{startTime-time.time()}')
+print(f'Time:{round(time.time()-startTime,2)}s')
 conn.commit()
