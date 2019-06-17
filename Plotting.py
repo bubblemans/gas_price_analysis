@@ -6,6 +6,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt	
 import tkinter.messagebox as tkmb
 import csv
+import requests
+from bs4 import BeautifulSoup
 
 
 # parse a csv file
@@ -85,19 +87,45 @@ class Analysis():
 	def calculateCost(self, mpg, gas_price, distance):
 		return float(distance/mpg*gas_price)
 
+class WebScrape():
+	# fetch gas price in different states in the US
+	# , and this method is specifically for map graph in Tableau
+	def __init__(self):
+		# headers = {'Accept-Language': 'en-US;q=0.7,en;q=0.3',}
+		# page = requests.get("https://gasprices.aaa.com/state-gas-price-averages/",headers=headers)
+		session = requests.Session()
+		page = session.get('https://gasprices.aaa.com/state-gas-price-averages/', headers={'User-Agent': 'Mozilla/5.0'})
+		print(page.status_code)
+		soup = BeautifulSoup(page.content, "lxml")
+		records = []
+		record = []
+		count = 0
+		for tag in soup.select("tbody tr td"):
+			count += 1
+			record.append(tag.text.strip())
+			if count % 5 == 0:
+				records.append(record)
+				record = []
+
+		# print(records)
+		with open("state.csv", "w") as csvFile:
+			writer = csv.writer(csvFile)
+			writer.writerows(records)
+
 if __name__ == '__main__':
-	reg_list = parse("Regular.csv")
-	mid_list = parse("Midgrade.csv")
-	pre_list = parse("Premium.csv")
+	# reg_list = parse("Regular.csv")
+	# mid_list = parse("Midgrade.csv")
+	# pre_list = parse("Premium.csv")
 
-	plotting = Plotting()
-	# plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
-	# 	,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
+	# plotting = Plotting()
+	# # plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
+	# # 	,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
 
-	analyze = Analysis()
-	stats = analyze.getStats((np.array(reg_list),"regular"), 
-		(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
-	plotting.barGraph("mean vs max vs min", np.array(stats))
+	# analyze = Analysis()
+	# stats = analyze.getStats((np.array(reg_list),"regular"), 
+	# 	(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
+	# plotting.barGraph("mean vs max vs min", np.array(stats))
+	WebScrape()
 
 
 
