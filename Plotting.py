@@ -26,8 +26,13 @@ class Plotting():
 	def __init__(self):
 		pass
 
+	# draw one or more line graphs
+	# param: a title string, a np.array of 2D np.array(date and gas price) and a label string(see example below)
+	# ret: none
 	def lineGraph(self, title, *args):
 		# args = [(np.array([date, gas_price]), label)]
+		# ex: np.array([[["11/24/1995", "2.534"],
+		# 				["12/01/1995", "2.236"]], "regular"])
 		for y in args:
 			plt.plot(y[0][:,0], y[0][:,1].astype(np.float), markeredgewidth=0.01,label=y[1])
 		plt.title(title)
@@ -39,8 +44,13 @@ class Plotting():
 		plt.legend(loc="best")
 		plt.show()
 
+	# draw one or more overlapping bar graph that contains mean, max, and min values
+	# param: a title string, a 2D np.array of mean, max, min, and location(see example below)
+	# ret: none
 	def barGraph(self,title,stat_list):
 		# stat_list = np.array([mean,max,min,location or gas_type])
+		# ex: np.array([["2.235", "3.235", "1.124", "CA"],
+		# 			    ["2.645", "3.532", "1.346", "NY"]])
 		for i in range(3):
 			if i == 0:
 				plt.bar(stat_list[:,3],stat_list[:,i].astype(np.float),color="g",alpha=0.8,label="mean")
@@ -57,15 +67,23 @@ class Analysis():
 	def __init__(self):
 		pass
 
+	# get stats of mean, max, min
+	# param: one or more tuples of a 2D np.array(date and gas_price) and a label
+	#	    ex: (np.array([["11/24/1995", "2.534"],
+	# 				       ["12/01/1995", "2.236"]]), "premium")
+	# ret: a list of mean, max, min, and label ex: [["2.235", "3.235", "1.124", "CA"],
+	# 											    ["2.645", "3.532", "1.346", "NY"]]
 	def getStats(self,*args):
 		stats = []
 		for arg in args:
 			n = arg[0][:,1].astype(np.float)
 			stats.append([np.mean(n), n.max(), n.min(), arg[1]])
 		return stats
-
+	# calculate the cost of gas based on the given mpg, gas_price, and distance
+	# param: mpg(float), gas_price(float), distance(float)
+	# return: the cost of gas(float)
 	def calculateCost(self, mpg, gas_price, distance):
-		return distance/mpg*gas_price
+		return float(distance/mpg*gas_price)
 
 if __name__ == '__main__':
 	reg_list = parse("Regular.csv")
