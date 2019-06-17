@@ -41,6 +41,14 @@ class fetcher:
                           '''.format(self._areaList[areaIndex], gasTypes[gasIndex], timeTypes[timeIndex] ))
         return self._cur.fetchall()
     
+    def getCarMpg(self):
+        '''
+        return a list of car name and its mpg 
+        '''
+        self._cur.execute('SELECT * FROM CarMpg')
+        return [ (i[0], i[1]) for i in self._cur.fetchall()]
+    
 f = fetcher()
-print(f.getRecordsByAreaGasTime(1,1,1))#Monthly, East Coast (PADD 1)
+#print(f.getRecordsByAreaGasTime(1,1,1))#Monthly, East Coast (PADD 1)
+print(f.getCarMpg())
 f.close()
