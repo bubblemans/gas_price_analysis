@@ -49,6 +49,7 @@ class fetcher:
         return [ (i[0], i[1]) for i in self._cur.fetchall()]
     
 f = fetcher()
-#print(f.getRecordsByAreaGasTime(1,1,1))#Monthly, East Coast (PADD 1)
-print(f.getCarMpg())
+print(f.getRecordsByAreaGasTime(0,0,0))
+print(f.getRecordsByAreaGasTime(1,0,0))
+#print(f.getCarMpg())
 f.close()

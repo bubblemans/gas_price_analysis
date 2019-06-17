@@ -77,21 +77,26 @@ cur.execute('''CREATE TABLE Records(
 #save data to table 4
 areaIndex = 1
 month, date, price = '', '', ''
+#li = [i for i in links.values()]
 for area_links in links.values():
     sub_page = requests.get(area_links)
     sub_soup = BeautifulSoup(sub_page.content, "lxml")
-    sub_links =  soup.find_all('a', class_='Hist')
-    needed_links = [sub_links[3]['href'], sub_links[6]['href'], sub_links[9]['href'] ]
+    sub_links =  sub_soup.find_all('a', class_='Hist')
+    if areaIndex < 11:
+        needed_links = [sub_links[3]['href'], sub_links[6]['href'], sub_links[9]['href'] ]
+    else:
+        needed_links = [sub_links[2]['href'], sub_links[4]['href'], sub_links[6]['href'] ] 
     gasIndex = 1
     for sub_sub_link in needed_links:
         sub_temp = f"{BASELINK}{sub_sub_link[1:]}"
         sub_sub_page = requests.get(sub_temp)
+        #print(sub_temp)
         sub_sub_soup = BeautifulSoup(sub_sub_page.content, "lxml") 
         timeType = 1    
         for a in sub_sub_soup.body.find_all('a', class_='NavChunk'):
             differentTime = f"{BASELINK}/hist/{a['href']}"
             differentTime_page = requests.get(differentTime)
-            differentTime_soup = BeautifulSoup(differentTime_page.content, "lxml")            
+            differentTime_soup = BeautifulSoup(differentTime_page.content, "lxml") 
             if timeType == 1:
                 for i in differentTime_soup.body.find_all('tr'):
                     k = i.find_all('td', class_='B6')
@@ -102,6 +107,8 @@ for area_links in links.values():
                             for m in range(1, len(j), 2):
                                 month, date, price= j[m].get_text()[:2], j[m].get_text()[3:], j[m+1].get_text()
                                 if month != '' and date != '' and price != '':
+                                    if price.strip() == 'NA':
+                                        price = 0
                                     print( year, int(month), int(date), float(price), areaIndex, gasIndex, timeType)
                                     cur.execute('INSERT INTO Records VALUES ( ? ,?, ?, ?, ?, ?, ?)',
                                                 ( year, int(month), int(date), float(price), areaIndex, gasIndex, timeType))
@@ -113,10 +120,13 @@ for area_links in links.values():
                             j = i.find_all('td')
                             year = j[0].get_text().strip()
                             for m in range(1, len(j)):
-                                print( int(year), m, float(j[m].get_text()), areaIndex, gasIndex, timeType)
+                                price = j[m].get_text()
+                                if price == '' or price.strip() == 'NA':
+                                    price = 0
+                                print( int(year), m, float(price), areaIndex, gasIndex, timeType)
                                 cur.execute('''INSERT INTO Records 
                                                 (dateYear, dateMonth, price, areaId, gasType, timeType) VALUES ( ?, ?, ?, ?, ?, ?)''',
-                                                ( int(year), m, float(j[m].get_text()), areaIndex, gasIndex, timeType))
+                                                ( int(year), m, float(price), areaIndex, gasIndex, timeType))
             else:
                 for i in differentTime_soup.body.find_all('tr'):
                     k = i.find_all('td', class_='B4')
@@ -125,15 +135,17 @@ for area_links in links.values():
                         if 2000 <= target_year <= 2018:
                             j = i.find_all('td')
                             for m in range(1, len(j)):
-                                if j[m].get_text() != '':
-                                    print( target_year, float(j[m].get_text() ), areaIndex, gasIndex, timeType)
+                                price = j[m].get_text() 
+                                if price != '':
+                                    if price.strip() == 'NA':
+                                        price = 0
+                                    print( target_year, (price), areaIndex, gasIndex, timeType)
                                     cur.execute('''INSERT INTO Records 
                                                     ( dateYear, price, areaId, gasType, timeType) VALUES (?, ?, ?, ?, ?)''',
-                                                    ( target_year, float(j[m].get_text() ), areaIndex, gasIndex, timeType))
+                                                    ( target_year, float(price), areaIndex, gasIndex, timeType))
                                     target_year+=1                                
             timeType += 1
         gasIndex += 1
     areaIndex += 1
 print(f'Time:{round(time.time()-startTime,2)}s')
 conn.commit()
-
