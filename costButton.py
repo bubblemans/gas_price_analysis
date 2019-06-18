@@ -5,7 +5,6 @@
 #Time:        6/13/2019
 #Description: calculate cast for user
 #######################################################
-#import tkinter.filedialog
 import tkinter.messagebox as tkmb
 import tkinter as tk
 import fetchData
@@ -71,6 +70,6 @@ class mainWindow(tk.Tk):
         except ValueError as e:
             tkmb.showerror("Error", "The miles must be a number!")
             self.userEntry.delete(0, tk.END)  
-            
+
 app = mainWindow()
 app.mainloop()

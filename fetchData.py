@@ -37,6 +37,10 @@ class fetcher:
         self._cur.execute('SELECT * FROM GasType')
         return self._cur.fetchall()   
      
+    def getTimeWithNum(self):
+        self._cur.execute('SELECT * FROM TimeType')
+        return self._cur.fetchall()   
+         
     def getRecordsByAreaGasTime(self, areaIndex, gasIndex, timeIndex):
         '''
         fetch data by area, gas, and time and return a list of data
