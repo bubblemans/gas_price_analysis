@@ -44,7 +44,7 @@ class Plotting():
 		maxV = args[0][0].shape[0]
 		plt.xticks(np.arange(0,maxV,20))
 		plt.legend(loc="best")
-		plt.show()
+		# plt.show()
 
 	# draw one or more overlapping bar graph that contains mean, max, and min values
 	# param: a title string, a 2D np.array of mean, max, min, and location(see example below)
@@ -63,7 +63,8 @@ class Plotting():
 
 		plt.title(title)
 		plt.legend(loc="best")
-		plt.show()
+		plt.xticks(rotation=45)
+		# plt.show()
 
 class Analysis():
 	def __init__(self):
@@ -118,13 +119,13 @@ if __name__ == '__main__':
 	pre_list = parse("Premium.csv")
 
 	plotting = Plotting()
-	plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
-		,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
+	# plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
+	# 	,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
 
-	# analyze = Analysis()
-	# stats = analyze.getStats((np.array(reg_list),"regular"), 
-	# 	(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"), (np.array(pre_list),"premium12"))
-	# plotting.barGraph("mean vs max vs min", np.array(stats))
+	analyze = Analysis()
+	stats = analyze.getStats((np.array(reg_list),"regular"), 
+		(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"), (np.array(pre_list),"premium12"))
+	plotting.barGraph("mean vs max vs min", np.array(stats))
 	# WebScrape()
 
 
