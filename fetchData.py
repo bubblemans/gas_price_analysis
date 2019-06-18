@@ -29,6 +29,14 @@ class fetcher:
         self._cur.execute('SELECT areaName FROM Area')
         return [i[0] for i in self._cur.fetchall()]
     
+    def getAreaWithNum(self):
+        self._cur.execute('SELECT * FROM Area')
+        return self._cur.fetchall()   
+    
+    def getGasWithNum(self):
+        self._cur.execute('SELECT * FROM GasType')
+        return self._cur.fetchall()   
+     
     def getRecordsByAreaGasTime(self, areaIndex, gasIndex, timeIndex):
         '''
         fetch data by area, gas, and time and return a list of data
@@ -49,7 +57,7 @@ class fetcher:
         return [ (i[0], i[1]) for i in self._cur.fetchall()]
     
 f = fetcher()
-print(f.getRecordsByAreaGasTime(0,0,0))
-print(f.getRecordsByAreaGasTime(1,0,0))
+#print(f.getRecordsByAreaGasTime(0,0,0))
+#print(f.getRecordsByAreaGasTime(11,0,2))
 #print(f.getCarMpg())
-f.close()
+#f.close()
