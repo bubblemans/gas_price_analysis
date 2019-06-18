@@ -1,6 +1,6 @@
 #######################################################
 #CIS 41B      Final Project
-#File Name:   costButton.py
+#File Name:   button-cost.py
 #Author:      Tianqi Yang
 #Time:        6/13/2019
 #Description: calculate cast for user
@@ -17,7 +17,7 @@ class mainWindow(tk.Tk):
         self._gas = dict( (y,x) for x,y in self._f.getGasWithNum())
         self._car = dict( (x,y) for x,y in self._f.getCarMpg())
         #set window
-        self.geometry("500x250+600+300")  
+        self.geometry("500x250+600+300")
         self.title("Calculate Cost")
         self.grab_set()
         self.focus_set()

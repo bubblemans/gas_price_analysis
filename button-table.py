@@ -1,6 +1,6 @@
 #######################################################
 #CIS 41B      Final Project
-#File Name:   showTable.py
+#File Name:   tableButton.py
 #Author:      Tianqi Yang
 #Time:        6/13/2019
 #Description: show tata base
@@ -20,7 +20,7 @@ class mainWindow(tk.Tk):
         self._time = dict( (y,x) for x,y in self._f.getTimeWithNum())
         #set window
         self.geometry("500x180+600+300")  
-        self.title("Calculate Cost")
+        self.title("Show data table")
         self.grab_set()
         self.focus_set()
         #frame1
@@ -41,7 +41,6 @@ class mainWindow(tk.Tk):
         frame2.pack(pady=10)
         #frame3
         frame3 = tk.Frame(self)
-        self._miles = tk.StringVar(0)
         tk.Label(frame3, text='the time of data by').grid(row=0, column=0)
         time = [ i for i in self._time.keys() ]
         self._timeType = tk.StringVar()
