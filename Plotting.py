@@ -113,19 +113,19 @@ class WebScrape():
 			writer.writerows(records)
 
 if __name__ == '__main__':
-	# reg_list = parse("Regular.csv")
-	# mid_list = parse("Midgrade.csv")
-	# pre_list = parse("Premium.csv")
+	reg_list = parse("Regular.csv")
+	mid_list = parse("Midgrade.csv")
+	pre_list = parse("Premium.csv")
 
-	# plotting = Plotting()
-	# # plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
-	# # 	,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
+	plotting = Plotting()
+	plotting.lineGraph("Weekly gas price", (np.array(reg_list),"regular")
+		,(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
 
 	# analyze = Analysis()
 	# stats = analyze.getStats((np.array(reg_list),"regular"), 
-	# 	(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"))
+	# 	(np.array(mid_list),"midgrade"),(np.array(pre_list),"premium"), (np.array(pre_list),"premium12"))
 	# plotting.barGraph("mean vs max vs min", np.array(stats))
-	WebScrape()
+	# WebScrape()
 
 
 
