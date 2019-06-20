@@ -31,25 +31,21 @@ class mainwin(tk.Tk):
         super().__init__()
         gui2fg()
         self.title('Gas Price APP')
-        tk.Button(self, text='Plot', command=lambda: self.timeline(0)).grid(row=0, column=0, padx=15)
+        usagelabel = ('Plot','Table','Analysis','Cost','Map','Prediction')
+        usagelist = (lambda:plotwin(self,self.db,0), lambda:tablewin(self,self.db), lambda:plotwin(self,self.db,1),
+                          lambda:costwin(self,self.db), lambda:mapwin(self), self.callback)
+        for i,f in enumerate(usagelist):
+            tk.Button(self, text=usagelabel[i], command=f, font=30, height = 10, width = 10).grid(row=0, column=i, padx=15)
+            
+        '''tk.Button(self, text='Plot', command=lambda: plotwin(self,self.db,0)).grid(row=0, column=0, padx=15)
         tk.Button(self, text='Table', command=lambda: tablewin(self,self.db)).grid(row=0, column=1, padx=15)
-        tk.Button(self, text='Analysis', command=lambda: self.timeline(2)).grid(row=0, column=2, padx=15)
+        tk.Button(self, text='Analysis', command=lambda: plotwin(self,self.db,1)).grid(row=0, column=2, padx=15)
         tk.Button(self, text='Cost', command=lambda:costwin(self,self.db)).grid(row=0, column=3, padx=15)
         tk.Button(self, text='Map', command=lambda:mapwin(self)).grid(row=0, column=4, padx=15)
-    
-    def timeline(self, choice):
-        tl = tk.Toplevel()
-        tk.Button(tl, text='Weekly', command=lambda: self.check(choice, 0)).grid(row=0, column=0, padx=15)
-        tk.Button(tl, text='Montyly', command=lambda: self.check(choice, 1)).grid(row=0, column=1, padx=15)
-        tk.Button(tl, text='Yearly', command=lambda: self.check(choice, 2)).grid(row=0, column=2, padx=15)
-    
-    def check(self, choice, timeline):
-        if choice == 0:
-            pw = plotwin(self, timeline, self.db, choice)
-            pw.wait_window()
-        else:
-            pw = plotwin(self, timeline, self.db, choice)
-            pw.wait_window()            
+        tk.Button(self, text='Prediction', command=self.callback).grid(row=0, column=5, padx=15)'''
+     
+    def callback(self):
+        pass
         
 
 class plotwin(tk.Toplevel):
@@ -57,14 +53,13 @@ class plotwin(tk.Toplevel):
     plotclass = Plotting()
     stat = Analysis()
     
-    def __init__(self, master, timeline, db, mainchoice):
+    def __init__(self, master, db, mainchoice):
         super().__init__(master)
         self.gastype = [tk.IntVar() for i in range(3)]
         self.canvas = None # for plotting
-        self.timeline = timeline
+        self.timeline = tk.IntVar()
         self.db = db
         self.areas = db.getArea()
-        self.message = tk.StringVar
         
         f1 = tk.Frame(self) # frame 1 to group listbox and scrollbar
         tk.Label(f1, text='pick Areas and a gas type to plot').grid()
@@ -76,20 +71,24 @@ class plotwin(tk.Toplevel):
         s.config(command=self.lb.yview)
         tk.Button(f1, text='OK', command=lambda:self.check(mainchoice)).grid()
         print(mainchoice)
-        if mainchoice == 2:
-            tk.Label(f1, textvariable=self.message).grid()
         f1.grid()
         
         f2 =  tk.Frame(self) # frame 1 to group Radiobutton
         tk.Label(f2, text='Gas Type').grid()
+        tk.Label(f2, text='Timeline').grid(row=0, column=1, padx=15)
         self.gaslabel = ('regular', 'midgrade', 'premium')
+        timelinelabel = ('Weekly', 'Monthly', 'Yearly')
         for i,tag in enumerate(self.gaslabel):
             tk.Checkbutton(f2, text=tag, variable=self.gastype[i]).grid(row=i+1, column=0)
+        for i,tag in enumerate(timelinelabel):
+            tk.Radiobutton(f2, text=tag, variable=self.timeline, value=i).grid(row=i+1, column=1)
         f2.grid(row=0, column=1)
         
         f3 = tk.Frame(self) # frame 3 to group plotting canvas
         self.canvasplot(f3)
         f3.grid(row=0, column=2)
+        self.grab_set()
+        self.focus_set()
     
     def check(self, mainchoice):
         if mainchoice == 0:
@@ -100,7 +99,7 @@ class plotwin(tk.Toplevel):
         
     def canvasplot(self, f3):
         #plotting canvas on frame 3
-        fig = plt.figure(figsize=(8,6))
+        fig = plt.figure(figsize=(9,6))
         ax = fig.add_subplot(1,1,1)
         self.canvas = FigureCanvasTkAgg(fig, master=f3)
         self.canvas.get_tk_widget().grid()  
@@ -116,7 +115,7 @@ class plotwin(tk.Toplevel):
                 for gt, intval in enumerate(self.gastype):
                     if intval.get() == 1:
                         #print('Area index:', area, 'gastype:', gt, 'timeline:',timeline)
-                        data = self.db.getRecordsByAreaGasTime(area,gt,self.timeline)
+                        data = self.db.getRecordsByAreaGasTime(area,gt,self.timeline.get())
                         newdata = self.parsingData(data)
                         plots.append([newdata, self.areas[area]+' & '+self.gaslabel[gt]])
             for i in plots:
@@ -136,20 +135,21 @@ class plotwin(tk.Toplevel):
         else:
             for area in t:
                 for i in range(len(gastypechoice)):
-                    data = self.db.getRecordsByAreaGasTime(area,i,self.timeline)
+                    data = self.db.getRecordsByAreaGasTime(area,i,self.timeline.get())
                     newdata = self.parsingData(data)
                     if len(t)>1:
                         graph.append([newdata, self.areas[area]])
                     else:
                         graph.append([newdata, self.gaslabel[i]])
             stats = np.array(self.stat.getStats(*graph))
+            print(stats)
             self.plotclass.barGraph('Mean,Max,min of Gas prices', np.array(stats))
             self.canvas.draw()
             plt.clf()
 
                     
     def parsingData(self, data):
-        newdata = ['/'.join(date) for date in [[str(one) for one in each] for each in [list(t[0:3-self.timeline]) for t in data]]]
+        newdata = ['/'.join(date) for date in [[str(one) for one in each] for each in [list(t[0:3-self.timeline.get()]) for t in data]]]
         for i in range(len(data)):
             newdata[i] = (newdata[i], str(data[i][3]))
         return np.array(newdata)
