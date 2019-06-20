@@ -13,8 +13,11 @@ import sys
 import os
 import tkinter.filedialog
 import matplotlib.image as mpimg
+import socket
+import pickle
 
-
+HOST = "localhost"      # on the same machine   
+PORT = 5551             # as long as this is unassigned
 
 def gui2fg():
     """Brings tkinter GUI to foreground on MacCall gui2fg()
@@ -33,7 +36,7 @@ class mainwin(tk.Tk):
         self.title('Gas Price APP')
         usagelabel = ('Plot','Table','Analysis','Cost','Map','Prediction')
         usagelist = (lambda:plotwin(self,self.db,0), lambda:tablewin(self,self.db), lambda:plotwin(self,self.db,1),
-                          lambda:costwin(self,self.db), lambda:mapwin(self), self.callback)
+                          lambda:costwin(self,self.db), lambda:mapwin(self), lambda:predictwin(self,self.db))
         for i,f in enumerate(usagelist):
             tk.Button(self, text=usagelabel[i], command=f, font=30, height = 10, width = 10).grid(row=0, column=i, padx=15)
             
@@ -62,7 +65,7 @@ class plotwin(tk.Toplevel):
         self.areas = db.getArea()
         
         f1 = tk.Frame(self) # frame 1 to group listbox and scrollbar
-        tk.Label(f1, text='pick Areas and a gas type to plot').grid()
+        tk.Label(f1, text='Pick Areas, gas types and a timeline').grid()
         s = tk.Scrollbar(f1)
         s.grid(row=1, column=1, sticky='NSW')        
         self.lb = tk.Listbox(f1, height=10, width=40, selectmode='multiple', yscrollcommand=s.set)
@@ -70,7 +73,9 @@ class plotwin(tk.Toplevel):
         self.lb.grid(row=1, column=0)
         s.config(command=self.lb.yview)
         tk.Button(f1, text='OK', command=lambda:self.check(mainchoice)).grid()
-        print(mainchoice)
+        if mainchoice == 1:
+            self.statsave = []
+            tk.Button(f1, text='Show Statistic in Text', command=lambda:self.showstat()).grid()
         f1.grid()
         
         f2 =  tk.Frame(self) # frame 1 to group Radiobutton
@@ -99,7 +104,7 @@ class plotwin(tk.Toplevel):
         
     def canvasplot(self, f3):
         #plotting canvas on frame 3
-        fig = plt.figure(figsize=(9,6))
+        fig = plt.figure(figsize=(8,5))
         ax = fig.add_subplot(1,1,1)
         self.canvas = FigureCanvasTkAgg(fig, master=f3)
         self.canvas.get_tk_widget().grid()  
@@ -118,8 +123,6 @@ class plotwin(tk.Toplevel):
                         data = self.db.getRecordsByAreaGasTime(area,gt,self.timeline.get())
                         newdata = self.parsingData(data)
                         plots.append([newdata, self.areas[area]+' & '+self.gaslabel[gt]])
-            for i in plots:
-                print(i)
             self.plotclass.lineGraph('Gas Price From 2000 to 2018', *plots)
             self.canvas.draw()
             plt.clf()
@@ -141,11 +144,18 @@ class plotwin(tk.Toplevel):
                         graph.append([newdata, self.areas[area]])
                     else:
                         graph.append([newdata, self.gaslabel[i]])
-            stats = np.array(self.stat.getStats(*graph))
-            print(stats)
-            self.plotclass.barGraph('Mean,Max,min of Gas prices', np.array(stats))
+            self.statsave = np.array(self.stat.getStats(*graph))
+            #print(self.statsave)
+            self.plotclass.barGraph('Mean,Max,min of Gas prices', np.array(self.statsave))
             self.canvas.draw()
             plt.clf()
+            
+    def showstat(self):
+        if len(self.statsave) != 0:
+            swin = tk.Toplevel(self)
+            for s in self.statsave:
+                message = f'{s[3]}: Mean/Max/Min = {round(float(s[0]),3)}/{s[1]}/{s[2]}'
+                tk.Label(swin, text=message).grid()
 
                     
     def parsingData(self, data):
@@ -378,7 +388,67 @@ class mapwin(tk.Toplevel):
             canvas.draw()  
             self.update()
 
+class predictwin(tk.Toplevel):
+    def __init__(self, master, db):
+        '''show the main window'''
+        super().__init__(master)
+        self._f = db
+        self._areas = dict( (y,x) for x,y in self._f.getAreaWithNum())
+        self._gas = dict( (y,x) for x,y in self._f.getGasWithNum())
 
+    # set window
+        self.geometry("500x250+600+300")
+        self.title("Predict")
+        self.grab_set()
+        self.focus_set()
+
+        # period type
+        pframe = tk.Frame(self)
+        tk.Label(pframe, text='Time period').grid(row=0, column=0, sticky="w")
+        period = ["Weekly", "Monthly", "Yearly"]
+        self._time = tk.StringVar()
+        self._time.set(period[0])
+        tk.OptionMenu(pframe, self._time, *period ).grid(row=0, column=1, padx=10)
+        pframe.pack(pady=10)
+
+        # area
+        frame = tk.Frame(self)
+        tk.Label(frame, text='You live in :').grid(row=0, column=0, sticky="w")
+        area = [ i for i in self._areas.keys() ]
+        self._live = tk.StringVar()
+        self._live.set(area[0])
+        tk.OptionMenu(frame, self._live, *area ).grid(row=0, column=1, padx=10)
+        frame.pack(pady=10)
+
+        # gas type
+        frame2 = tk.Frame(self)
+        tk.Label(frame2, text='gas type is:').grid(row=0, column=0, sticky="w")
+        gas = [ i for i in self._gas.keys() ]
+        self._gasType = tk.StringVar()
+        self._gasType.set(gas[0])
+        tk.OptionMenu(frame2, self._gasType, *gas).grid(row=0, column=1, padx=10)
+        frame2.pack(pady=10)
+
+        # Predict button
+        button = tk.Button(self, text="Predict", command=self.handlePredict)
+        button.pack(pady=10)
+
+        # result label
+        self.result = tk.Label(self)
+        self.result.pack(pady=10)
+
+    def handlePredict(self):
+        with socket.socket() as s:
+            s.connect((HOST, PORT))
+            mesg = str(self._areas[self._live.get()]-1) + "," + str(self._gas[self._gasType.get()]-1) + "," + self._time.get()
+            s.send(mesg.encode('utf-8'))
+            fromServer = pickle.loads(s.recv(1024))
+            self.updateLabel("The next "+self._time.get()[0:-2]+" gas price "+"is "+str(fromServer))
+            s.close()
+
+    def updateLabel(self, fromServer):
+        self.result.config(text=fromServer)
+        self.update()
 
 mw  = mainwin()
 mw.mainloop()
