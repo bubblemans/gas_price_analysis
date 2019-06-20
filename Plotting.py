@@ -36,7 +36,7 @@ class Plotting():
 		# ex: np.array([[["11/24/1995", "2.534"],
 		# 				["12/01/1995", "2.236"]], "regular"])
 		for y in args:
-			plt.plot(y[0][:,0], y[0][:,1].astype(np.float), markeredgewidth=0.01,label=y[1])
+			plt.plot(y[0][:,0], y[0][:,1].astype(np.float), ".", markeredgewidth=0.01,label=y[1])
 		plt.title(title)
 		plt.xlabel("Date")
 		plt.ylabel("gas price")
@@ -80,6 +80,11 @@ class Analysis():
 		stats = []
 		for arg in args:
 			n = arg[0][:,1].astype(np.float)
+			np.sort(n)
+			for i in range(len(n)):
+				if n[i] == 0:
+					n = n[:i]
+					break
 			stats.append([np.mean(n), n.max(), n.min(), arg[1]])
 		return stats
 	# calculate the cost of gas based on the given mpg, gas_price, and distance

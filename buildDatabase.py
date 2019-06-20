@@ -102,7 +102,7 @@ for area_links in links.values():
                     k = i.find_all('td', class_='B6')
                     if len(k) != 0 or i.get_text() == '': 
                         year = int(k[0].get_text().strip()[:4])
-                        if 2000 <= year <= 2018:
+                        if 2000 <= year <= 2019:
                             j = i.find_all('td')
                             for m in range(1, len(j), 2):
                                 month, date, price= j[m].get_text()[:2], j[m].get_text()[3:], j[m+1].get_text()
@@ -116,7 +116,7 @@ for area_links in links.values():
                 for i in differentTime_soup.body.find_all('tr'):
                     k = i.find_all('td', class_='B4')
                     if isinstance(k, list) and len(k) > 0 :
-                        if 2000 <= int(k[0].get_text().strip()) <= 2018:
+                        if 2000 <= int(k[0].get_text().strip()) <= 2019:
                             j = i.find_all('td')
                             year = j[0].get_text().strip()
                             for m in range(1, len(j)):
@@ -132,7 +132,7 @@ for area_links in links.values():
                     k = i.find_all('td', class_='B4')
                     if isinstance(k, list) and len(k) > 0 :
                         target_year = int(k[0].get_text().strip()[:4])
-                        if 2000 <= target_year <= 2018:
+                        if 2000 <= target_year <= 2019:
                             j = i.find_all('td')
                             for m in range(1, len(j)):
                                 price = j[m].get_text() 
