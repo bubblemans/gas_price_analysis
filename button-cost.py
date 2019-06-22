@@ -3,7 +3,7 @@
 #File Name:   button-cost.py
 #Author:      Tianqi Yang
 #Time:        6/13/2019
-#Description: calculate cast for user
+#Description: calculate cost for user
 #######################################################
 import tkinter.messagebox as tkmb
 import tkinter as tk
