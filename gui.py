@@ -1,4 +1,10 @@
 
+"""
+Name: Weiyuan Chen
+Date: 6/23/2019
+Final Project
+Discription: GUI of the project that has 6 usages for user to choose.
+"""
 import matplotlib
 matplotlib.use('TkAgg')     # tell matplotlib to work with Tkinter
 import tkinter as tk        # normal import of tkinter for GUI
@@ -28,9 +34,10 @@ def gui2fg():
 
 class mainwin(tk.Tk):
     
-    db = fetcher()
+    db = fetcher() #database module
     
     def __init__(self):
+        '''show 6 buttons in the main window and let user to choose one'''
         super().__init__()
         gui2fg()
         self.title('Gas Price APP')
@@ -39,24 +46,17 @@ class mainwin(tk.Tk):
                           lambda:costwin(self,self.db), lambda:mapwin(self), lambda:predictwin(self,self.db))
         for i,f in enumerate(usagelist):
             tk.Button(self, text=usagelabel[i], command=f, font=30, height = 10, width = 10).grid(row=0, column=i, padx=15)
-            
-        '''tk.Button(self, text='Plot', command=lambda: plotwin(self,self.db,0)).grid(row=0, column=0, padx=15)
-        tk.Button(self, text='Table', command=lambda: tablewin(self,self.db)).grid(row=0, column=1, padx=15)
-        tk.Button(self, text='Analysis', command=lambda: plotwin(self,self.db,1)).grid(row=0, column=2, padx=15)
-        tk.Button(self, text='Cost', command=lambda:costwin(self,self.db)).grid(row=0, column=3, padx=15)
-        tk.Button(self, text='Map', command=lambda:mapwin(self)).grid(row=0, column=4, padx=15)
-        tk.Button(self, text='Prediction', command=self.callback).grid(row=0, column=5, padx=15)'''
-     
-    def callback(self):
-        pass
         
 
 class plotwin(tk.Toplevel):
     
-    plotclass = Plotting()
-    stat = Analysis()
+    plotclass = Plotting() # plot and bar graph function module
+    stat = Analysis() # calcualte mean,max,min module
     
     def __init__(self, master, db, mainchoice):
+        '''Three frames of this plotting window
+           Argument: master window, database, mainchoice for plot or bargraph
+        '''
         super().__init__(master)
         self.gastype = [tk.IntVar() for i in range(3)]
         self.canvas = None # for plotting
@@ -96,6 +96,7 @@ class plotwin(tk.Toplevel):
         self.focus_set()
     
     def check(self, mainchoice):
+        '''check the mainchoice is 0 or 1 for plot or bargraph'''
         if mainchoice == 0:
             self.plot()
         else:
@@ -103,14 +104,15 @@ class plotwin(tk.Toplevel):
     
         
     def canvasplot(self, f3):
+        '''build a canvas for plot and bargraph'''
         #plotting canvas on frame 3
-        fig = plt.figure(figsize=(8,5))
+        fig = plt.figure(figsize=(8,6.5))
         ax = fig.add_subplot(1,1,1)
         self.canvas = FigureCanvasTkAgg(fig, master=f3)
         self.canvas.get_tk_widget().grid()  
             
     def plot(self):
-        #callback of ok button, check user selection and get data from db.
+        '''callback of ok button, check user selection and get data from db and call dot plot function to plot'''
         t = self.lb.curselection()
         plots = []
         if len(t) < 1 or all(intval.get()==0 for intval in self.gastype):
@@ -128,6 +130,7 @@ class plotwin(tk.Toplevel):
             plt.clf()
         
     def bargraph(self):
+        '''callback of ok button, check user selection, get data from db calculate stats, and call bargraph function to plot'''
         t = self.lb.curselection()
         graph = []
         gastypechoice = [intval.get() for intval in self.gastype if intval.get() == 1]
@@ -145,12 +148,12 @@ class plotwin(tk.Toplevel):
                     else:
                         graph.append([newdata, self.gaslabel[i]])
             self.statsave = np.array(self.stat.getStats(*graph))
-            #print(self.statsave)
             self.plotclass.barGraph('Mean,Max,min of Gas prices', np.array(self.statsave))
             self.canvas.draw()
             plt.clf()
             
     def showstat(self):
+        '''toplevel win for showing mean,max,min'''
         if len(self.statsave) != 0:
             swin = tk.Toplevel(self)
             for s in self.statsave:
@@ -159,6 +162,7 @@ class plotwin(tk.Toplevel):
 
                     
     def parsingData(self, data):
+        '''change data in a format to use'''
         newdata = ['/'.join(date) for date in [[str(one) for one in each] for each in [list(t[0:3-self.timeline.get()]) for t in data]]]
         for i in range(len(data)):
             newdata[i] = (newdata[i], str(data[i][3]))
@@ -166,7 +170,7 @@ class plotwin(tk.Toplevel):
             
 class tablewin(tk.Toplevel):
     def __init__(self, master, db):
-        '''show the main window'''
+        '''table button window to show different buttons for user choose'''
         super().__init__(master)
         self._f = db
         self._areas = dict( (y,x) for x,y in self._f.getAreaWithNum())
@@ -208,13 +212,14 @@ class tablewin(tk.Toplevel):
         tk.Label(self, textvariable=self._cost).pack()
 
     def showRecoreds(self):
+        '''get the data and construct a displaywindow'''
         records = self._f.getRecordsByAreaGasTime(self._areas[self._live.get()]-1, self._gas[self._gasType.get()]-1, self._time[self._timeType.get()]-1)
         title = '-'.join([self._live.get(), self._gasType.get()])
-        tabledisplayWindow(self, records, title )
+        displaytableWindow(self, records, title )
         
-class tabledisplayWindow(tk.Toplevel):
+class displaytableWindow(tk.Toplevel):
     def __init__(self, master, records, title):
-        '''initial the park window'''
+        '''show to table data in a window'''
         super().__init__(master)
         self._records = records
         self._fileName = title
@@ -246,7 +251,7 @@ class tabledisplayWindow(tk.Toplevel):
         tk.Button(self, text="OK", fg='blue', command=self.writeFile).grid()
         
     def writeFile(self):
-        '''save parks to the file'''
+        '''save selected record to the file'''
         selection = self._box.curselection()
         if len(selection) ==0:
             tkmb.showerror("Error", "At least choice one item!")
@@ -266,7 +271,7 @@ class tabledisplayWindow(tk.Toplevel):
         
 class costwin(tk.Toplevel):
     def __init__(self, master, db):
-        '''show the main window'''
+        '''cost button window to show the cost by user choice and input'''
         super().__init__(master)
         self._f = db
         
@@ -274,7 +279,7 @@ class costwin(tk.Toplevel):
         self._gas = dict( (y,x) for x,y in self._f.getGasWithNum())
         self._car = dict( (x,y) for x,y in self._f.getCarMpg())
         #set window
-        self.geometry("500x200+600+300")  
+        self.geometry("500x270+600+300")
         self.title("Calculate Cost")
         self.grab_set()
         self.focus_set()
@@ -284,56 +289,55 @@ class costwin(tk.Toplevel):
         area = [ i for i in self._areas.keys() ]
         self._live = tk.StringVar()
         self._live.set(area[0])
-        set1 = tk.OptionMenu(frame, self._live, *area )
-        set1.grid(row=0, column=1, padx=10)
-        frame.pack()        
+        tk.OptionMenu(frame, self._live, *area ).grid(row=0, column=1, padx=10)
+        frame.pack(pady=10)        
         #frame1
         frame1 = tk.Frame(self)
         tk.Label(frame1, text='Your car model is:').grid(row=0, column=0)
         options = [ i for i in self._car.keys() ]
         self._model = tk.StringVar()
         self._model.set(options[0])
-        set2 = tk.OptionMenu(frame1, self._model, *options)
-        set2.grid(row=0, column=1, padx=10)
-        frame1.pack()  
+        tk.OptionMenu(frame1, self._model, *options).grid(row=0, column=1, padx=10)
+        frame1.pack(pady=10)
         #frame2
         frame2 = tk.Frame(self)
         tk.Label(frame2, text='gas type is:').grid(row=0, column=0)
         gas = [ i for i in self._gas.keys() ]
         self._gasType = tk.StringVar()
         self._gasType.set(gas[0])
-        set3 = tk.OptionMenu(frame2, self._gasType, *gas)
-        set3.grid(row=0, column=1, padx=10)
-        frame2.pack()          
+        tk.OptionMenu(frame2, self._gasType, *gas).grid(row=0, column=1, padx=10)
+        frame2.pack(pady=10)
         #frame3
         frame3 = tk.Frame(self)
         self._miles = tk.StringVar(0)
-        self.userEntry = tk.Entry(frame3, textvariable=self._miles)
+        self.userEntry = tk.Entry(frame3, textvariable=self._miles, width=4)
         self.userEntry.grid(row=1, column=0)
         tk.Label(frame3, text='miles drove in 2018/').grid(row=1, column=1)
         self._month = tk.StringVar()
         self._month.set(1)
         chooseMonth = tk.OptionMenu(frame3, self._month, *range(1,13)).grid(row=1, column=3)
-        frame3.pack()
+        frame3.pack(pady=10)
         #ok button
-        tk.Button(self, text="OK", fg='blue', command = self.calculate).pack()
+        tk.Button(self, text="OK", fg='blue', command = self.calculate).pack(pady=6)
         #cost label
         self._cost = tk.StringVar()
         tk.Label(self, textvariable=self._cost).pack()
         
     def calculate(self):
+        '''calculate the cost'''
         try: 
             miles = float(self._miles.get().strip())
-            prices = self._f.getRecordsByAreaGasTime(self._areas[self._live.get()], self._gas[self._gasType.get()]-1, 2)
-            cost = miles / self._car[self._model.get()] * prices[-1][-1]
-            self._cost.set(f"The cost is ${cost}.")
+            prices = self._f.getRecordsByAreaGasTime(self._areas[self._live.get()]-1, self._gas[self._gasType.get()]-1, 1)
+            cost = miles / self._car[self._model.get()] * prices[int(self._month.get())-13][-1]
+            self._cost.set(f"The cost is ${round(cost,2)}.")
         except ValueError as e:
-            tkmb.showerror("Error", "The miles must be number!")
-            self.userEntry.delete(0, tk.END)
+            tkmb.showerror("Error", "The miles must be a number!")
+            self.userEntry.delete(0, tk.END) 
             
 class mapwin(tk.Toplevel):
 
     def __init__(self, master):
+        '''a window to show the gas prices in U.S. map'''
         super().__init__(master)
         self.title("Map")
 
@@ -363,6 +367,7 @@ class mapwin(tk.Toplevel):
         canvas.draw()  
 
     def handleOK(self):
+        '''Ok button for different gas type'''
         if self.controlVar.get() == 1:
             fig = plt.figure(figsize=(9,6))
             img=mpimg.imread("regular.png")
@@ -390,7 +395,7 @@ class mapwin(tk.Toplevel):
 
 class predictwin(tk.Toplevel):
     def __init__(self, master, db):
-        '''show the main window'''
+        '''prediction button window to let user make a choice'''
         super().__init__(master)
         self._f = db
         self._areas = dict( (y,x) for x,y in self._f.getAreaWithNum())
@@ -438,6 +443,7 @@ class predictwin(tk.Toplevel):
         self.result.pack(pady=10)
 
     def handlePredict(self):
+        '''connet to a server to make the prediction'''
         with socket.socket() as s:
             s.connect((HOST, PORT))
             mesg = str(self._areas[self._live.get()]-1) + "," + str(self._gas[self._gasType.get()]-1) + "," + self._time.get()
@@ -447,6 +453,7 @@ class predictwin(tk.Toplevel):
             s.close()
 
     def updateLabel(self, fromServer):
+        '''update a text label'''
         self.result.config(text=fromServer)
         self.update()
 
