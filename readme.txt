@@ -14,15 +14,17 @@ buildDatabase.py: fetch gas price records and save in the database.
 
 fetchData.py: the class that finds the record from the database.
 
-button-cost.py: the button that calculates the cost for the user in the main GUI
+plotwin.py: called by the plot button in gui to plot a dot plot or bargraph&mean/max/min
 
-button-table.py: the button that shows the records that user want to see and could be saved in the file.
+costwin.py: the button that calculates the cost for the user in the main GUI
+
+tablewin.py: the button that shows the records that user want to see and could be saved in the file.
 
 Plotting.py: This file has three major functions for scattered plot and bargraph, and they are Plotting.lineGraph(), Plotting.barGraph(), and Analysis.getStats(). The rest of the functions are for testing.
 
-map.py: This file is to construct the map window after user click on “map” in the main window.
+mapwin.py: This file is to construct the map window after user click on “map” in the main window.
 
-predict.py: This file is to construct the predict window after user click on “predict” in the main window. One of the method(handlePredict) is to ask server.py to give back the prediction result based on the input it sends.
+predictwin.py: This file is to construct the predict window after user click on “predict” in the main window. One of the method(handlePredict) is to ask server.py to give back the prediction result based on the input it sends.
 
 server.py: This file will be executed first and listen to clients forever. It is to accept the data from the client and calculate the prediction and return it to user.
 

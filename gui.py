@@ -17,9 +17,6 @@ import tablewin
 import costwin
 import mapwin
 
-HOST = "localhost"      # on the same machine   
-PORT = 5551             # as long as this is unassigned
-
 def gui2fg():
     """Brings tkinter GUI to foreground on MacCall gui2fg()
     after creating main window and before mainloop() start"""
