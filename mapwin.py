@@ -1,3 +1,5 @@
+# Written by Alvin Lin on 06/24/19
+# this file configures the mapWin UI setting and display three maps
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')               

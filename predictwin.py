@@ -1,3 +1,6 @@
+# Written by Alvin Lin on 06/24/19
+# this file configures the predictWin UI setting
+# and it behaves like a client to interact with server.py
 import matplotlib.pyplot as plt 
 import tkinter as tk
 import socket
