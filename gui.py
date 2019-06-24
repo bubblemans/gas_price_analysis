@@ -1,9 +1,11 @@
 
 """
-Name: Weiyuan Chen
+Name: Weiyuan Chen, Tianqi, Alvin
 Date: 6/23/2019
 Final Project
-Discription: GUI of the project that has 6 usages for user to choose.
+Discription: GUI of the project that has 6 functionalities which are show plots from 2000 to 2018,
+show table with date and gas price, show mean,max,min in a bargraph, show a U.S. map of gas prices,
+and show next week/month/year gas price pridiction. All functionalities will be visualized in a gui.
 """
 import matplotlib
 matplotlib.use('TkAgg')     # tell matplotlib to work with Tkinter
@@ -457,5 +459,6 @@ class predictwin(tk.Toplevel):
         self.result.config(text=fromServer)
         self.update()
 
-mw  = mainwin()
-mw.mainloop()
+if __name__ == '__main__':
+    mw  = mainwin()
+    mw.mainloop()
