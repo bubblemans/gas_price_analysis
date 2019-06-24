@@ -63,7 +63,10 @@ class Plotting():
 
 		plt.title(title)
 		plt.legend(loc="best")
-		plt.xticks(rotation=45)
+		if len(stat_list) > 3:
+			plt.xticks(rotation=30, fontsize=5)
+		# else:
+		# 	plt.xticks(rotation=30)
 		# plt.show()
 
 class Analysis():
@@ -80,7 +83,9 @@ class Analysis():
 		stats = []
 		for arg in args:
 			n = arg[0][:,1].astype(np.float)
+			# print(n)
 			np.sort(n)
+			# print(n)
 			for i in range(len(n)):
 				if n[i] == 0:
 					n = n[:i]
