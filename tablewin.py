@@ -8,13 +8,13 @@
 import tkinter.filedialog
 import tkinter.messagebox as tkmb
 import tkinter as tk
-import fetchData
+#import fetchData
 import os
-class mainWindow(tk.Tk):
-    def __init__(self):
+class mainWindow(tk.Toplevel):
+    def __init__(self, master, db):
         '''show the main window'''
-        super().__init__()
-        self._f = fetchData.fetcher()
+        super().__init__(master)
+        self._f = db
         self._areas = dict( (y,x) for x,y in self._f.getAreaWithNum())
         self._gas = dict( (y,x) for x,y in self._f.getGasWithNum())
         self._time = dict( (y,x) for x,y in self._f.getTimeWithNum())
@@ -108,6 +108,4 @@ class displayWindow(tk.Toplevel):
                         file.write(self._select[i])
                         file.write('\n')
                 self.destroy()
-                
-app = mainWindow()
-app.mainloop()
+    
