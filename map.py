@@ -1,3 +1,6 @@
+# Written by Alvin Lin on 06/24/19
+# this file is to written for testing for mapWin.py
+# this file configures the mapWin UI setting
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')               

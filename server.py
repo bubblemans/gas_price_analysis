@@ -1,3 +1,6 @@
+# Written by Alvin Lin on 06/24/19
+# this file is to contruct a local server and calculate the machine learning 
+# model and return the prediction to the client
 from pandas import DataFrame
 from pandas import concat
 import csv
